@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telecrane | TR1-8D 領航者挑戰賽</title>
+    <style>
+        :root {
+            --primary-orange: #FF8C00;
+            --dark-gray: #333333;
+            --bg-light: #f4f4f4;
+            --success-green: #28a745;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #e0e0e0 0%, #ffffff 100%);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--dark-gray);
+        }
+
+        #game-container {
+            background: white;
+            width: 95%;
+            max-width: 650px;
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+            text-align: center;
+            border-top: 8px solid var(--primary-orange);
+        }
+
+        /* 產品展示區 */
+        .product-display {
+            margin: 10px 0;
+            position: relative;
+        }
+        .product-img {
+            width: 150px; /* 縮小一點讓版面更平衡 */
+            height: auto;
+            filter: drop-shadow(5px 5px 15px rgba(0,0,0,0.2));
+            transition: transform 0.3s;
+        }
+        .product-img:hover { transform: scale(1.05) rotate(2deg); }
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--primary-orange);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .speech-bubble {
+            background: #fff3e6;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 15px 0;
+            border-left: 5px solid var(--primary-orange);
+            font-size: 15px;
+            min-height: 40px;
+        }
+
+        h2 { color: var(--primary-orange); margin: 10px 0; font-size: 22px; }
+
+        .btn-option {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .btn-option:hover { border-color: var(--primary-orange); background: #fff9f0; transform: translateY(-2px); }
+
+        /* 表單樣式 */
+        #lead-form { display: none; text-align: left; animation: slideUp 0.5s; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .form-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 4px; font-weight: bold; font-size: 14px; }
+        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+
+        .submit-btn {
+            background: var(--primary-orange);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 15px;
+            transition: 0.3s;
+        }
+        .submit-btn:hover { background: #e67e00; box-shadow: 0 5px 15px rgba(255,140,0,0.3); }
+
+        .footer-brand { margin-top: 20px; font-size: 12px; color: #999; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="product-display">
+        <img src="image_9c2199.jpg" alt="Telecrane TR1-8D" class="product-img">
+    </div>
+
+    <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
+    
+    <div id="quiz-section">
+        <div class="speech-bubble" id="mascot-msg">
+            您好！我是 Telecrane 數位小助手。看過這台強悍的 <strong>TR1-8D</strong> 嗎？答對 5 題，就送您專屬技術方案！
+        </div>
+        <h2 id="question-text">載入中...</h2>
+        <div id="options-container"></div>
+    </div>
+
+    <div id="lead-form">
+        <h2 style="text-align:center">🏆 恭喜成為 Telecrane 專家</h2>
+        <p style="text-align:center; font-size: 14px;">請填寫以下資訊，系統將自動聯繫 <strong>Bert</strong> 為您服務。</p>
+        
+        <div class="form-group"><label>國家 (Country)</label><input type="text" id="f-country" required></div>
+        <div class="form-group"><label>公司名稱 (Company)</label><input type="text" id="f-company" required></div>
+        <div class="form-group"><label>姓名 (Name)</label><input type="text" id="f-name" required></div>
+        <div class="form-group"><label>聯絡地址 (Address)</label><input type="text" id="f-address"></div>
+        <div class="form-group"><label>電話 (Phone)</label><input type="tel" id="f-phone" required></div>
+        <div class="form-group"><label>Email</label><input type="email" id="f-email" required></div>
+        
+        <button class="submit-btn" onclick="sendEmail()">送出資料至 Bert 郵箱</button>
+    </div>
+
+    <div class="footer-brand">Telecrane - 30 Years of Excellence in Radio Remote Control</div>
+</div>
+
+<script>
+    const quizData = [
+        {
+            q: "Telecrane 累積 30 年經驗，主要應用在哪些工業領域？",
+            options: ["天車及各類工業吊掛環境", "家用電視操控", "玩具賽車"],
+            correct: 0,
+            hint: "我們是專業天車遙控器製造商，致力於守護工業安全！"
+        },
+        {
+            q: "這台 TR1-8D 發射機擁有 8 個按鍵，它最經典的外殼特徵是？",
+            options: ["半透明外殼", "亮橘色耐撞擊工業外殼", "金屬不鏽鋼"],
+            correct: 1,
+            hint: "看看上面的圖片，那亮橘色就是我們 Telecrane 的專業標誌！"
+        },
+        {
+            q: "當您在偏遠國家使用，機器故障怎麼辦？Telecrane 的絕活是？",
+            options: ["寄回原廠修理一個月", "使用 e-Card 智慧副卡，隨插即用", "自己拆開焊接"],
+            correct: 1,
+            hint: "這是我們全球領先的黑科技，讓您的工廠永不停工！"
+        },
+        {
+            q: "Telecrane 的 ID 識別碼有多少組合，能確保不被他人干擾？",
+            options: ["1,000 種", "5,000 種", "超過 4.3 億種"],
+            correct: 2,
+            hint: "安全第一！我們的隨機編碼組合比全球人口一半還多。"
+        },
+        {
+            q: "為什麼全球各國代理商都優先選擇 Telecrane？",
+            options: ["因為市佔率全球第一且極其穩定", "因為我們有送禮物", "純粹因為廣告多"],
+            correct: 0,
+            hint: "超過 30 年的專業口碑，是全球天車遙控器的首選品牌！"
+        }
+    ];
+
+    let currentStep = 0;
+
+    function showQuestion() {
+        const step = quizData[currentStep];
+        document.getElementById('question-text').innerText = step.q;
+        const optionsDiv = document.getElementById('options-container');
+        optionsDiv.innerHTML = '';
+        
+        step.options.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-option';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(index);
+            optionsDiv.appendChild(btn);
+        });
+        document.getElementById('progress-bar').style.width = (currentStep / quizData.length * 100) + '%';
+    }
+
+    function checkAnswer(index) {
+        const step = quizData[currentStep];
+        if (index === step.correct) {
+            currentStep++;
+            document.getElementById('mascot-msg').innerHTML = "<strong>答對了！</strong> 您對 Telecrane 的專業度令人印象深刻。";
+            if (currentStep < quizData.length) {
+                setTimeout(showQuestion, 600);
+            } else {
+                showFinalForm();
+            }
+        } else {
+            document.getElementById('mascot-msg').innerHTML = "<strong>哎呀，再想一下！</strong> 提示：" + step.hint;
+        }
+    }
+
+    function showFinalForm() {
+        document.getElementById('progress-bar').style.width = '100%';
+        document.getElementById('quiz-section').style.display = 'none';
+        document.getElementById('lead-form').style.display = 'block';
+    }
+
+    function sendEmail() {
+        const country = document.getElementById('f-country').value;
+        const company = document.getElementById('f-company').value;
+        const name = document.getElementById('f-name').value;
+        const address = document.getElementById('f-address').value;
+        const phone = document.getElementById('f-phone').value;
+        const email = document.getElementById('f-email').value;
+
+        if(!country || !company || !name || !phone || !email) {
+            alert('請填寫所有必要資訊！');
+            return;
+        }
+
+        const subject = encodeURIComponent(`Telecrane Quiz Lead: ${company} - ${name}`);
+        const body = encodeURIComponent(
+            `新客戶諮詢資訊：\n\n` +
+            `國家: ${country}\n` +
+            `公司: ${company}\n` +
+            `姓名: ${name}\n` +
+            `地址: ${address}\n` +
+            `電話: ${phone}\n` +
+            `Email: ${email}\n\n` +
+            `此郵件由 Telecrane 互動網頁自動生成。`
+        );
+
+        // 使用 mailto 觸發本地郵件客戶端
+        window.location.href = `mailto:bert@telecrane.com.tw?subject=${subject}&body=${body}`;
+        
+        alert('正在開啟您的電子郵件軟體，請點擊「傳送」即可將資料發送給 Bert！');
+    }
+
+    showQuestion();
+</script>
+</body>
+</html>
